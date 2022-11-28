@@ -16,6 +16,7 @@ else
     echo "Running on CI"
 fi
 
+# test out the CI workflow
 
 CAPROVER_VERSION=0.0.1
 IMAGE_NAME=joingardens/gardens-engine-edge
