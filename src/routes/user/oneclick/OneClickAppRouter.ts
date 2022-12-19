@@ -2,11 +2,12 @@ import express = require('express')
 import axios from 'axios'
 import ApiStatusCodes from '../../../api/ApiStatusCodes'
 import BaseApi from '../../../api/BaseApi'
+import DataStore from '../../../datastore/DataStore'
 import InjectionExtractor from '../../../injection/InjectionExtractor'
 import Logger from '../../../utils/Logger'
 
 const router = express.Router()
-const DEFAULT_ONE_CLICK_BASE_URL = 'https://oneclickapps.caprover.com'
+const DEFAULT_ONE_CLICK_BASE_URL = 'https://oneclickapps.joingardens.com/'
 
 const VERSION = `v4`
 
@@ -17,12 +18,16 @@ interface IOneClickAppIdentifier {
     displayName: string
     description: string
     logoUrl: string
+
+    category: string
+
+    subcategory: string
 }
 
 router.post('/repositories/insert', function (req, res, next) {
     const dataStore =
         InjectionExtractor.extractUserFromInjected(res).user.dataStore
-    let apiBaseUrl = `${req.body.repositoryUrl || ''}`
+    let apiBaseUrl: string = `${req.body.repositoryUrl || ''}`
     if (apiBaseUrl.endsWith('/')) {
         apiBaseUrl = apiBaseUrl.substring(0, apiBaseUrl.length - 1)
     }
@@ -71,7 +76,7 @@ router.post('/repositories/insert', function (req, res, next) {
 })
 
 router.post('/repositories/delete', function (req, res, next) {
-    const dataStore =
+    const dataStore: DataStore =
         InjectionExtractor.extractUserFromInjected(res).user.dataStore
     let apiBaseUrl = `${req.body.repositoryUrl || ''}`
     if (apiBaseUrl.endsWith('/')) {
@@ -103,7 +108,7 @@ router.post('/repositories/delete', function (req, res, next) {
 })
 
 router.get('/repositories/', function (req, res, next) {
-    const dataStore =
+    const dataStore: DataStore =
         InjectionExtractor.extractUserFromInjected(res).user.dataStore
 
     return Promise.resolve() //
@@ -123,7 +128,7 @@ router.get('/repositories/', function (req, res, next) {
 })
 
 router.get('/template/list', function (req, res, next) {
-    const dataStore =
+    const dataStore: DataStore =
         InjectionExtractor.extractUserFromInjected(res).user.dataStore
 
     return Promise.resolve() //
@@ -140,7 +145,7 @@ router.get('/template/list', function (req, res, next) {
                     .then(function (axiosResponse) {
                         return axiosResponse.data.oneClickApps as any[]
                     })
-                    .then(function (apps: any[]) {
+                    .then(function (apps: IOneClickAppIdentifier[]) {
                         return apps.map((element) => {
                             const ret: IOneClickAppIdentifier = {
                                 baseUrl: apiBaseUrl,
@@ -156,6 +161,8 @@ router.get('/template/list', function (req, res, next) {
                                         element.logoUrl.startsWith('https://'))
                                         ? element.logoUrl
                                         : `${apiBaseUrl}/${VERSION}/logos/${element.logoUrl}`,
+                                category: element.description.split(" - ")[0].split(", ")[0],
+                                subcategory: element.description.split(" - ")[0].split(", ")[1]
                             }
                             return ret
                         })
