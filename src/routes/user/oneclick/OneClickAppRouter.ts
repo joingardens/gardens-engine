@@ -22,6 +22,8 @@ interface IOneClickAppIdentifier {
     category: string
 
     subcategory: string
+
+    isFeatured?: boolean
 }
 
 router.post('/repositories/insert', function (req, res, next) {
@@ -161,8 +163,13 @@ router.get('/template/list', function (req, res, next) {
                                         element.logoUrl.startsWith('https://'))
                                         ? element.logoUrl
                                         : `${apiBaseUrl}/${VERSION}/logos/${element.logoUrl}`,
-                                category: element.description.split(" - ")[0].split(", ")[0],
-                                subcategory: element.description.split(" - ")[0].split(", ")[1]
+                                category: element.description
+                                    .split(' - ')[0]
+                                    .split(', ')[0],
+                                subcategory: element.description
+                                    .split(' - ')[0]
+                                    .split(', ')[1],
+                                isFeatured: element.isFeatured ? true : false,
                             }
                             return ret
                         })
