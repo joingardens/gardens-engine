@@ -27,6 +27,8 @@ RUN curl -Iv https://registry.yarnpkg.com/ && \
     git clone https://github.com/joingardens/gardens-engine-ui.git && \
     cd gardens-engine-ui && \
     git log --max-count=1 && \
+    git submodule init && \
+    git submodule update && \
     yarn install  --no-cache --frozen-lockfile --network-timeout 600000 && echo "Installation finished" && \
     yarn run build && echo "Building finished" && \
     mv ./build ../../app/dist-frontend && \
