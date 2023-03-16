@@ -1,8 +1,9 @@
 import externalIp = require('public-ip')
+import { _configService } from '../configuration/config.service'
 import DockerApi from '../docker/DockerApi'
 import BackupManager from '../user/system/BackupManager'
+import { IAppEnvVar } from './../models/AppDefinition'
 import CaptainConstants from './CaptainConstants'
-import EnvVar from './EnvVars'
 import http = require('http')
 import request = require('request')
 
@@ -118,7 +119,10 @@ function startServerOnPort_80_443_3000() {
 }
 
 function checkPortOrThrow(ipAddr: string, portToTest: number) {
-    if (CaptainConstants.isDebug || !!EnvVar.BY_PASS_PROXY_CHECK) {
+    if (
+        CaptainConstants.isDebug ||
+        _configService.get('BY_PASS_PROXY_CHECK') === 'TRUE'
+    ) {
         return Promise.resolve()
     }
 
@@ -217,8 +221,8 @@ export function install() {
             return checkSystemReq()
         })
         .then(function () {
-            if (EnvVar.MAIN_NODE_IP_ADDRESS) {
-                return EnvVar.MAIN_NODE_IP_ADDRESS
+            if (_configService.get('MAIN_NODE_IP_ADDRESS')) {
+                return _configService.get('MAIN_NODE_IP_ADDRESS')
             }
 
             return externalIp.v4()
@@ -298,19 +302,22 @@ export function install() {
                     containerPath: CaptainConstants.captainBaseDirectory,
                 },
             ]
-
+            console.log(_configService._configuration)
             const env = [] as IAppEnvVar[]
+            for (let variable of Object.entries(
+                _configService._configuration
+            )) {
+                if (variable[0] !== 'IS_CAPTAIN_INSTANCE') {
+                    env.push({
+                        key: variable[0],
+                        value: String(variable[1]),
+                    })
+                }
+            }
             env.push({
-                key: EnvVar.keys.IS_CAPTAIN_INSTANCE,
+                key: 'IS_CAPTAIN_INSTANCE',
                 value: '1',
             })
-
-            if (EnvVar.DEFAULT_PASSWORD) {
-                env.push({
-                    key: EnvVar.keys.DEFAULT_PASSWORD,
-                    value: EnvVar.DEFAULT_PASSWORD,
-                })
-            }
 
             if (EnvVar.CAPTAIN_DOCKER_API) {
                 env.push({
@@ -334,7 +341,7 @@ export function install() {
 
                 env.push({
                     key: EnvVar.keys.CAPTAIN_IS_DEBUG,
-                    value: EnvVar.CAPTAIN_IS_DEBUG + '',
+                    value: EnvVar.CAPTAIN_IS_DEBUG,
                 })
 
                 volumeToMount.push({

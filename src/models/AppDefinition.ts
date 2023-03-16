@@ -1,7 +1,9 @@
+import { EnvType } from '../configuration/config.service'
+
 type IAllAppDefinitions = IHashMapGeneric<IAppDef>
 
 interface IAppEnvVar {
-    key: string
+    key: keyof EnvType
     value: string
 }
 

@@ -11,6 +11,11 @@ const router = express.Router()
 
 const failedLoginCircularTimestamps = new CircularQueue<number>(5)
 
+router.get('/', function (req, res, next) {
+    console.log()
+    res.send('hello')
+})
+
 router.post('/', function (req, res, next) {
     const password = req.body.password || ''
 
